@@ -24,3 +24,12 @@ def get_total_pages(html_page):
     total_pages = pages_text.split(' ')[-1]
     return total_pages
 
+
+def get_job_ids(html_page):
+    soup = BeautifulSoup(html_page, 'html.parser')
+    jobs_list = soup.find_all("li", class_="jl")
+    jobs_ids = []
+    for job in jobs_list:
+        jobs_ids.append(job.get('data-id'))
+    return jobs_ids
+
