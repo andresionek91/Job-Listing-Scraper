@@ -2,8 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import yaml
 import logging
-from multiprocessing import Pool
-from itertools import repeat
+from multiprocessing import Pool, Manager
+import json
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -44,27 +44,69 @@ def get_job_ids(html_page):
 
 
 def write_jobs_ids_to_file(jobs_ids):
-    for job_id in jobs_ids:
-        with open(config['jobs-ids-filename'], 'a') as dest_file:
+    with open(config['jobs-ids-filename'], 'a') as dest_file:
+        for job_id in jobs_ids:
             dest_file.write(job_id)
             dest_file.write('\n')
-    num_lines = sum(1 for line in open(config['jobs-ids-filename']))
-    logging.info('Total ids collected: {}'.format(num_lines))
 
 
-def execute(country_code, search_term):
-    page_count = 1
-    total_pages = 1
-    while page_count <= total_pages:
-        html_page = list_jobs(search_term, country_code, page_count)
-        total_pages = get_total_pages(html_page)
-        jobs_ids = get_job_ids(html_page)
-        write_jobs_ids_to_file(jobs_ids)
-        page_count += 1
+def write_jobs_params_to_file(jobs_params):
+    with open(config['jobs-params-filename'], 'a') as dest_file:
+        for param in jobs_params:
+            dest_file.write(json.dumps(param))
+            dest_file.write('\n')
+
+
+def worker(row, country_code, search_term, page_count):
+    html_page = list_jobs(search_term, country_code, page_count)
+    logging.info('{}: extracting ids {}, {}, {}'.format(len(row), search_term, country_code, page_count))
+    jobs_ids = get_job_ids(html_page)
+    row += jobs_ids
+
+
+def build_job_params(params, country_code, search_term):
+    page_html = list_jobs(search_term, country_code, 2)
+    total_pages = get_total_pages(page_html)
+    # Glassdor only returns 30 first pages for each search
+    total_pages = total_pages if total_pages <= 30 else 30
+    for page_count in range(1, total_pages + 1):
+        params.append([country_code, search_term, page_count])
+    logging.info('building job for {}, {}, total pages {}'.format(search_term, country_code, total_pages))
+
+
+def execute_job_param():
+    country_codes = list(range(1, config['country_max'] + 1))
+    with Manager() as mgr:
+        params = mgr.list([])
+
+        build_params = []
+        for country_code in country_codes:
+            for search_term in config['search-terms']:
+                build_params.append([params, country_code, search_term])
+
+        with Pool() as p:
+            p.starmap(build_job_params, build_params)
+            p.close()
+            p.join()
+
+        write_jobs_params_to_file(params)
+
+
+def execute():
+    with Manager() as mgr:
+        row = mgr.list([])
+
+        params = []
+        with open(config['jobs-params-filename']) as params_file:
+            for line in params_file:
+                params.append([row] + json.loads(line))
+
+        with Pool() as p:
+            p.starmap(worker, params)
+
+        write_jobs_ids_to_file(row)
 
 
 if __name__ == '__main__':
-    country_codes = list(range(1, config['country_max'] + 1))
-    for search_term in config['search-terms']:
-        pool = Pool()
-        pool.starmap(execute, zip(country_codes, repeat(search_term)))
+    execute_job_param()
+    execute()
