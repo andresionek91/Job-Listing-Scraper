@@ -17,3 +17,10 @@ def list_jobs(search_term, country_code, page):
                              headers=config['headers']).text
     return html_page
 
+
+def get_total_pages(html_page):
+    soup = BeautifulSoup(html_page, 'html.parser')
+    pages_text = soup.find_all("div", class_="cell middle hideMob padVertSm")[0].text
+    total_pages = pages_text.split(' ')[-1]
+    return total_pages
+
