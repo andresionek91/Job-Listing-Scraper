@@ -1,7 +1,5 @@
 #https://www.glassdoor.co.uk/Job/us-data-science-jobs-SRCH_IL.0,2_IN1_KO3,15.htm
-countries: #_IN part of url
-  min: 1
-  max: 266
+country_max: 266
 
 search-terms:
   - data-scientist
@@ -17,6 +15,7 @@ search-terms:
   - database-engineer
   - machine-learning-engineer
 
+jobs-ids-filename: jobs_ids.txt
 
 headers:
   User-Agent:
