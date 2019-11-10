@@ -105,4 +105,6 @@ venv.bak/
 src/config.yml
 .vscode/settings.json
 .idea
-results/*
+results/
+jobs_ids.txt
+jobs_params.txt
