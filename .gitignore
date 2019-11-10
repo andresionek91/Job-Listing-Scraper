@@ -105,3 +105,4 @@ venv.bak/
 src/config.yml
 .vscode/settings.json
 .idea
+results/*
