@@ -21,7 +21,7 @@ It was latter transformed to parquet using a Glue Job with the script provided i
 
 
 At the time I scrapped it, there were about 160k listings for the terms I've searched for.
-The data will be uploaded to a Kaggle Dataset.
+The data will be uploaded to a [Kaggle Dataset](https://www.kaggle.com/andresionek/data-jobs-listings-glassdoor/).
 
 # Disclaimer
 I don't have any connection with Glassdoor and this project is neither 
