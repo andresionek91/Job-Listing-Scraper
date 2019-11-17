@@ -1,3 +1,4 @@
 pyaml
 requests
 beautifulsoup4
+stem

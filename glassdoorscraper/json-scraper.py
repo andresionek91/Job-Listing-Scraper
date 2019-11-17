@@ -3,6 +3,7 @@ import yaml
 import logging
 from multiprocessing import Pool, Manager
 import json
+import time
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -21,7 +22,18 @@ def load_unique_job_ids():
 
 def get_job_info(job_id):
     url = 'https://www.glassdoor.co.uk/Job/json/details.htm?jobListingId={job_id}'.format(job_id=job_id)
-    json_data = requests.get(url, headers=config['headers']).json()
+    counter = 1
+    while True:
+        try:
+            json_data = requests.get(url, headers=config['headers']).json()
+            break
+        except json.decoder.JSONDecodeError:
+            if counter > 10:
+                raise ValueError()
+            else:
+                print('ERROR FOUND: retrying request')
+                time.sleep(5)
+                counter += 1
     return json_data
 
 
@@ -45,7 +57,7 @@ def divide_chunks(data, size):
 
 def execute():
     data = load_unique_job_ids()
-    chunks = divide_chunks(data, 200)
+    chunks = divide_chunks(data, 400)
 
     for idx, chunk in enumerate(chunks):
         with Manager() as mgr:
