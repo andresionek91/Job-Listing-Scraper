@@ -50,9 +50,6 @@ for df_name in unnested.keys():
         "path": output_path.format(table_name),
     }
 
-    if df_name == root_table_name:
-        conn_options["partitionKeys"] = partition_keys
-
     partitioned_dataframe = df_dropnullfields.toDF().repartition(1)
     partitioned_dynamicframe = DynamicFrame.fromDF(partitioned_dataframe, glueContext, "partitioned_df")
 
@@ -60,7 +57,7 @@ for df_name in unnested.keys():
         frame=partitioned_dynamicframe,
         connection_type="s3",
         connection_options=conn_options,
-        format="parquet",
+        format="csv",
         transformation_ctx="datasink"
     )
 
