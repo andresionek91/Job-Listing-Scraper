@@ -16,7 +16,7 @@ the information in blocks of 400 listings and save the `json` files to the resul
 
 ### 3. Processing data
 I uploaded the data manually to a S3 bucket, where I crawled the data using a Glue Crawler.
-It was latter transformed to parquet using a Glue Job with the script provided in 
+It was latter transformed to csv using a Glue Job with the script provided in 
 `glue-job-script.py`. No automation on this step though, because I ran it only once.
 
 
